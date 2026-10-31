@@ -1,69 +1,203 @@
-import Image from "next/image";
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { Navbar } from "@/components/navbar";
+import { UrlInputForm } from "@/components/url-input-form";
+import { VideoCard } from "@/components/video-card";
+import { FormatSelector } from "@/components/format-selector";
+import { FeatureGrid } from "@/components/feature-grid";
+import { HistoryDrawer } from "@/components/history-drawer";
+import { DownloadToast } from "@/components/download-toast";
+import { VideoMetadata, HistoryItem } from "@/lib/types";
 
 export default function Home() {
+  const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [toastState, setToastState] = useState<{
+    isVisible: boolean;
+    type: "video" | "audio";
+    quality: string;
+  }>({
+    isVisible: false,
+    type: "video",
+    quality: "",
+  });
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("streamflow_history");
+      if (saved) {
+        setHistory(JSON.parse(saved));
+      }
+    } catch {}
+  }, []);
+
+  const saveHistoryItem = (item: HistoryItem) => {
+    setHistory((prev) => {
+      const filtered = prev.filter((h) => h.id !== item.id);
+      const updated = [item, ...filtered].slice(0, 15);
+      try {
+        localStorage.setItem("streamflow_history", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const handleClearHistory = () => {
+    setHistory([]);
+    try {
+      localStorage.removeItem("streamflow_history");
+    } catch {}
+  };
+
+  const handleDeleteHistoryItem = (id: string) => {
+    setHistory((prev) => {
+      const updated = prev.filter((item) => item.id !== id);
+      try {
+        localStorage.setItem("streamflow_history", JSON.stringify(updated));
+      } catch {}
+      return updated;
+    });
+  };
+
+  const handleAnalyze = async (url: string) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/info", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to process video");
+      }
+
+      setMetadata(data);
+
+      saveHistoryItem({
+        id: data.id,
+        title: data.title,
+        thumbnail: data.thumbnail,
+        channelTitle: data.channelTitle,
+        duration: data.duration,
+        url: data.url,
+        timestamp: Date.now(),
+      });
+    } catch (err: any) {
+      setError(err?.message || "An unexpected error occurred");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleQuickPaste = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      if (text) {
+        handleAnalyze(text.trim());
+      }
+    } catch {}
+  };
+
+  const handleDownloadStarted = (type: "video" | "audio", quality: string) => {
+    setToastState({
+      isVisible: true,
+      type,
+      quality,
+    });
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
+    <div className="min-h-screen bg-[#ffffff] text-[#000000] flex flex-col font-sans selection:bg-[#dceeb1] selection:text-[#000000]">
+      <Navbar
+        historyCount={history.length}
+        onOpenHistory={() => setIsHistoryOpen(true)}
+        onQuickPaste={handleQuickPaste}
+      />
+
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 flex flex-col items-center space-y-12">
+        <div className="w-full text-center space-y-4 max-w-4xl mx-auto">
+          <div className="inline-flex items-center gap-2 font-mono text-xs uppercase tracking-[0.6px] bg-[#f4ecd6] text-[#000000] px-4 py-1.5 rounded-full border border-[#000000] font-semibold">
+            <span>● FAST YOUTUBE MEDIA EXTRACTOR</span>
+          </div>
+
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-light tracking-[-1.5px] sm:tracking-[-2px] text-[#000000] leading-[1.05]">
+            Download YouTube in{" "}
+            <span className="font-bold underline decoration-[#dceeb1] decoration-wavy decoration-2">
+              4K & Studio MP3
+            </span>
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+
+          <p className="text-base sm:text-lg text-[#000000] max-w-xl mx-auto font-normal opacity-85 leading-relaxed tracking-[-0.2px]">
+            Direct streaming downloads for ultra high-definition video and 320 kbps lossless audio. No registration, no ads, no wait times.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+
+        <UrlInputForm
+          onAnalyze={handleAnalyze}
+          isLoading={isLoading}
+          error={error}
+        />
+
+        {metadata && (
+          <div className="w-full space-y-8 animate-in fade-in slide-in-from-bottom-6 duration-300">
+            <VideoCard metadata={metadata} />
+            <FormatSelector
+              metadata={metadata}
+              onDownloadStarted={handleDownloadStarted}
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+          </div>
+        )}
+
+        <FeatureGrid />
       </main>
+
+      <footer className="w-full border-t border-[#e6e6e6] bg-[#ffffff] py-14 text-xs text-[#000000]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <span className="text-2xl font-bold tracking-[-0.5px] text-[#000000]">
+              StreamFlow
+            </span>
+            <p className="font-mono text-[11px] uppercase tracking-[0.5px] text-[#666666]">
+              A Technical & Joyful YouTube Media Engine
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4 font-mono text-[11px] uppercase tracking-[0.5px]">
+            <span>4K 2160P</span>
+            <span>•</span>
+            <span>1080P FHD</span>
+            <span>•</span>
+            <span>320 KBPS MP3</span>
+            <span>•</span>
+            <span>DASH MUXING</span>
+          </div>
+        </div>
+      </footer>
+
+      <HistoryDrawer
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        items={history}
+        onSelectItem={(url) => handleAnalyze(url)}
+        onClearHistory={handleClearHistory}
+        onDeleteItem={handleDeleteHistoryItem}
+      />
+
+      <DownloadToast
+        isVisible={toastState.isVisible}
+        type={toastState.type}
+        quality={toastState.quality}
+        onClose={() => setToastState((prev) => ({ ...prev, isVisible: false }))}
+      />
     </div>
   );
 }

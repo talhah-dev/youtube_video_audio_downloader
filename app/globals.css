@@ -2,25 +2,53 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #000000;
+  --color-block-lime: #dceeb1;
+  --color-block-lilac: #c5b0f4;
+  --color-block-cream: #f4ecd6;
+  --color-block-pink: #efd4d4;
+  --color-block-mint: #c8e6cd;
+  --color-block-coral: #f3c9b6;
+  --color-block-navy: #1f1d3d;
+  --color-accent-magenta: #ff3d8b;
+  --color-surface-soft: #f7f7f5;
+  --color-hairline: #e6e6e6;
+  --color-hairline-soft: #f1f1f1;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-block-lime: var(--color-block-lime);
+  --color-block-lilac: var(--color-block-lilac);
+  --color-block-cream: var(--color-block-cream);
+  --color-block-pink: var(--color-block-pink);
+  --color-block-mint: var(--color-block-mint);
+  --color-block-coral: var(--color-block-coral);
+  --color-block-navy: var(--color-block-navy);
+  --color-accent-magenta: var(--color-accent-magenta);
+  --color-surface-soft: var(--color-surface-soft);
+  --color-hairline: var(--color-hairline);
+  --color-hairline-soft: var(--color-hairline-soft);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  background-color: #ffffff;
+  color: #000000;
+  font-family: var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@keyframes marquee {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  display: flex;
+  width: 200%;
+  animation: marquee 25s linear infinite;
 }
