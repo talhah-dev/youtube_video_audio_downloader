@@ -98,15 +98,6 @@ export default function Home() {
     }
   };
 
-  const handleQuickPaste = async () => {
-    try {
-      const text = await navigator.clipboard.readText();
-      if (text) {
-        handleAnalyze(text.trim());
-      }
-    } catch {}
-  };
-
   const handleDownloadStarted = (type: "video" | "audio", quality: string) => {
     setToastState({
       isVisible: true,
@@ -120,7 +111,6 @@ export default function Home() {
       <Navbar
         historyCount={history.length}
         onOpenHistory={() => setIsHistoryOpen(true)}
-        onQuickPaste={handleQuickPaste}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 flex flex-col items-center space-y-12">

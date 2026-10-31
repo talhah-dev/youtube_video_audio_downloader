@@ -1,16 +1,15 @@
 "use client";
 
 import React from "react";
-import { Sparkles, Clock, ArrowUpRight } from "lucide-react";
+import { Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface NavbarProps {
   historyCount?: number;
   onOpenHistory?: () => void;
-  onQuickPaste?: () => void;
 }
 
-export function Navbar({ historyCount = 0, onOpenHistory, onQuickPaste }: NavbarProps) {
+export function Navbar({ historyCount = 0, onOpenHistory }: NavbarProps) {
   return (
     <div className="sticky top-0 z-50 w-full bg-white">
       <header className="w-full border-b border-[#e6e6e6] h-14 bg-white flex items-center">
@@ -44,18 +43,6 @@ export function Navbar({ historyCount = 0, onOpenHistory, onQuickPaste }: Navbar
                     {historyCount}
                   </span>
                 )}
-              </Button>
-            )}
-
-            {onQuickPaste && (
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={onQuickPaste}
-                className="flex items-center gap-1.5 text-xs h-9 px-4 rounded-full font-medium"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Paste Link</span>
               </Button>
             )}
           </div>
