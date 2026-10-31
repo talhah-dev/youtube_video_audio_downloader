@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Ytdl } from "@distube/ytdl-core";
+import { Ytdl, Client } from "@distube/ytdl-core";
 import { formatBytes, formatSeconds, formatViews } from "@/lib/utils";
 import { AudioFormatOption, VideoFormatOption, VideoMetadata } from "@/lib/types";
 
@@ -12,9 +12,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Please enter a valid YouTube URL" }, { status: 400 });
     }
 
-    const ytdl = new Ytdl(
-      process.env.YOUTUBE_COOKIE ? { cookie: process.env.YOUTUBE_COOKIE } : {}
-    );
+    const ytdl = new Ytdl({
+      clients: [
+        Client.Tv,
+        Client.WebEmbedded,
+        Client.Mweb,
+        Client.VisionOS,
+        Client.WebCreator,
+        Client.WebMusic,
+      ],
+      ...(process.env.YOUTUBE_COOKIE ? { cookie: process.env.YOUTUBE_COOKIE } : {}),
+    });
     const info = await ytdl.getInfo(url);
     const details = info.videoDetails;
 

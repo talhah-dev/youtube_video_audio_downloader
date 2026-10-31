@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { Ytdl } from "@distube/ytdl-core";
+import { Ytdl, Client } from "@distube/ytdl-core";
 import ffmpegStatic from "ffmpeg-static";
 import { spawn } from "child_process";
 import fs from "fs";
@@ -39,9 +39,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Missing URL parameter" }, { status: 400 });
     }
 
-    const ytdl = new Ytdl(
-      process.env.YOUTUBE_COOKIE ? { cookie: process.env.YOUTUBE_COOKIE } : {}
-    );
+    const ytdl = new Ytdl({
+      clients: [
+        Client.Tv,
+        Client.WebEmbedded,
+        Client.Mweb,
+        Client.VisionOS,
+        Client.WebCreator,
+        Client.WebMusic,
+      ],
+      ...(process.env.YOUTUBE_COOKIE ? { cookie: process.env.YOUTUBE_COOKIE } : {}),
+    });
     const safeTitle = cleanTitle(rawTitle) || "youtube_media";
     const asciiTitle = safeTitle.replace(/[^\x20-\x7E]/g, "").replace(/["']/g, "") || "download";
     const ffmpegPath = getFfmpegPath();
