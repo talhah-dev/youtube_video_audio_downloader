@@ -12,7 +12,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Please enter a valid YouTube URL" }, { status: 400 });
     }
 
-    const ytdl = new Ytdl();
+    const ytdl = new Ytdl(
+      process.env.YOUTUBE_COOKIE ? { cookie: process.env.YOUTUBE_COOKIE } : {}
+    );
     const info = await ytdl.getInfo(url);
     const details = info.videoDetails;
 

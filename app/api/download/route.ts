@@ -39,7 +39,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Missing URL parameter" }, { status: 400 });
     }
 
-    const ytdl = new Ytdl();
+    const ytdl = new Ytdl(
+      process.env.YOUTUBE_COOKIE ? { cookie: process.env.YOUTUBE_COOKIE } : {}
+    );
     const safeTitle = cleanTitle(rawTitle) || "youtube_media";
     const asciiTitle = safeTitle.replace(/[^\x20-\x7E]/g, "").replace(/["']/g, "") || "download";
     const ffmpegPath = getFfmpegPath();
