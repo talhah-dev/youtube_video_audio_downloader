@@ -8,6 +8,8 @@ import os from "os";
 import { cleanTitle } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const maxDuration = 60;
 
 function getFfmpegPath(): string {
   const localExe = path.join(

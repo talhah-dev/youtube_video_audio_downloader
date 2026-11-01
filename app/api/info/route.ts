@@ -3,6 +3,9 @@ import { Ytdl, Client } from "@distube/ytdl-core";
 import { formatBytes, formatSeconds, formatViews } from "@/lib/utils";
 import { AudioFormatOption, VideoFormatOption, VideoMetadata } from "@/lib/types";
 
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();

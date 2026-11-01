@@ -8,6 +8,9 @@
     "start": "next start",
     "lint": "eslint"
   },
+  "engines": {
+    "node": ">=22.x"
+  },
   "dependencies": {
     "@distube/ytdl-core": "^5.2.0",
     "@types/fluent-ffmpeg": "^2.1.28",
