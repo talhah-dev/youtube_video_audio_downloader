@@ -16,14 +16,7 @@ export async function POST(req: NextRequest) {
     }
 
     const ytdl = new Ytdl({
-      clients: [
-        Client.Tv,
-        Client.WebEmbedded,
-        Client.Mweb,
-        Client.VisionOS,
-        Client.WebCreator,
-        Client.WebMusic,
-      ],
+      clients: [Client.Tv],
       ...(process.env.YOUTUBE_COOKIE ? { cookie: process.env.YOUTUBE_COOKIE } : {}),
     });
     const info = await ytdl.getInfo(url);
