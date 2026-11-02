@@ -19,12 +19,14 @@ export function FormatSelector({ metadata, onDownloadStarted }: FormatSelectorPr
     setDownloadingItem(itemKey);
     onDownloadStarted?.("video", format.resolution);
 
+    const savedCookie = typeof window !== "undefined" ? localStorage.getItem("streamflow_yt_cookie") || "" : "";
     const query = new URLSearchParams({
       url: metadata.url,
       type: "video",
       itag: format.itag.toString(),
       format: format.container || "mp4",
       title: metadata.title,
+      ...(savedCookie ? { cookie: savedCookie } : {}),
     });
 
     const downloadUrl = `/api/download?${query.toString()}`;
@@ -45,6 +47,7 @@ export function FormatSelector({ metadata, onDownloadStarted }: FormatSelectorPr
     setDownloadingItem(itemKey);
     onDownloadStarted?.("audio", format.bitrate);
 
+    const savedCookie = typeof window !== "undefined" ? localStorage.getItem("streamflow_yt_cookie") || "" : "";
     const query = new URLSearchParams({
       url: metadata.url,
       type: "audio",
@@ -52,6 +55,7 @@ export function FormatSelector({ metadata, onDownloadStarted }: FormatSelectorPr
       format: format.container,
       bitrate: format.bitrate,
       title: metadata.title,
+      ...(savedCookie ? { cookie: savedCookie } : {}),
     });
 
     const downloadUrl = `/api/download?${query.toString()}`;
