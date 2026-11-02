@@ -41,8 +41,9 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Missing URL parameter" }, { status: 400 });
     }
 
+    const clients: Client[] = [Client.WebEmbedded, Client.Tv, Client.Mweb];
     const ytdl = new Ytdl({
-      clients: [Client.Tv],
+      clients,
       ...(process.env.YOUTUBE_COOKIE ? { cookie: process.env.YOUTUBE_COOKIE } : {}),
     });
     const safeTitle = cleanTitle(rawTitle) || "youtube_media";

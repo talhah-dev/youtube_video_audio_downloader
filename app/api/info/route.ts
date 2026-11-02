@@ -15,8 +15,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Please enter a valid YouTube URL" }, { status: 400 });
     }
 
+    const clients: Client[] = [Client.WebEmbedded, Client.Tv, Client.Mweb];
     const ytdl = new Ytdl({
-      clients: [Client.Tv],
+      clients,
       ...(process.env.YOUTUBE_COOKIE ? { cookie: process.env.YOUTUBE_COOKIE } : {}),
     });
     const info = await ytdl.getInfo(url);
