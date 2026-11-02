@@ -8,6 +8,7 @@ interface UrlInputFormProps {
   onAnalyze: (url: string) => void;
   isLoading: boolean;
   error?: string | null;
+  onOpenSession?: () => void;
 }
 
 const SAMPLE_URLS = [
@@ -16,7 +17,7 @@ const SAMPLE_URLS = [
   { label: "Big Buck Bunny 4K", url: "https://www.youtube.com/watch?v=aqz-KE-bpKQ", color: "bg-[#f4ecd6]" },
 ];
 
-export function UrlInputForm({ onAnalyze, isLoading, error }: UrlInputFormProps) {
+export function UrlInputForm({ onAnalyze, isLoading, error, onOpenSession }: UrlInputFormProps) {
   const [url, setUrl] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -96,9 +97,20 @@ export function UrlInputForm({ onAnalyze, isLoading, error }: UrlInputFormProps)
       </form>
 
       {error && (
-        <div className="w-full mt-4 px-5 py-3 rounded-2xl bg-[#efd4d4] border border-[#000000] text-[#000000] text-sm flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-[#000000]" />
-          <span className="font-medium">{error}</span>
+        <div className="w-full mt-4 px-5 py-3 rounded-2xl bg-[#efd4d4] border border-[#000000] text-[#000000] text-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-[#000000] shrink-0" />
+            <span className="font-medium">{error}</span>
+          </div>
+          {onOpenSession && (
+            <button
+              type="button"
+              onClick={onOpenSession}
+              className="font-mono text-xs font-bold uppercase tracking-[0.5px] px-3 py-1.5 rounded-full bg-[#000000] text-white hover:bg-[#333333] transition-colors shrink-0 self-start sm:self-auto"
+            >
+              Fix with Session Cookie →
+            </button>
+          )}
         </div>
       )}
 

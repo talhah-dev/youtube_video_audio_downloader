@@ -8,14 +8,18 @@ import { FormatSelector } from "@/components/format-selector";
 import { FeatureGrid } from "@/components/feature-grid";
 import { HistoryDrawer } from "@/components/history-drawer";
 import { DownloadToast } from "@/components/download-toast";
+import { SessionModal } from "@/components/session-modal";
 import { VideoMetadata, HistoryItem } from "@/lib/types";
 
 export default function Home() {
   const [metadata, setMetadata] = useState<VideoMetadata | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentUrl, setCurrentUrl] = useState<string>("");
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isSessionModalOpen, setIsSessionModalOpen] = useState(false);
+  const [hasActiveSession, setHasActiveSession] = useState(false);
   const [toastState, setToastState] = useState<{
     isVisible: boolean;
     type: "video" | "audio";
@@ -31,6 +35,11 @@ export default function Home() {
       const saved = localStorage.getItem("streamflow_history");
       if (saved) {
         setHistory(JSON.parse(saved));
+      }
+      const savedCookie = localStorage.getItem("streamflow_yt_cookie");
+      if (savedCookie && savedCookie.trim()) {
+        setHasActiveSession(true);
+        document.cookie = `streamflow_yt_cookie=${encodeURIComponent(savedCookie.trim())}; path=/; max-age=31536000; SameSite=Lax`;
       }
     } catch {}
   }, []);
@@ -66,12 +75,17 @@ export default function Home() {
   const handleAnalyze = async (url: string) => {
     setIsLoading(true);
     setError(null);
+    setCurrentUrl(url);
 
     try {
+      const savedCookie = typeof window !== "undefined" ? localStorage.getItem("streamflow_yt_cookie") || "" : "";
       const res = await fetch("/api/info", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
+        headers: {
+          "Content-Type": "application/json",
+          ...(savedCookie ? { "x-youtube-cookie": savedCookie } : {}),
+        },
+        body: JSON.stringify({ url, cookie: savedCookie }),
       });
 
       const data = await res.json();
@@ -92,10 +106,28 @@ export default function Home() {
         timestamp: Date.now(),
       });
     } catch (err: any) {
-      setError(err?.message || "An unexpected error occurred");
+      const msg = err?.message || "An unexpected error occurred";
+      setError(msg);
+      if (
+        msg.toLowerCase().includes("bot") ||
+        msg.toLowerCase().includes("sign in") ||
+        msg.toLowerCase().includes("player")
+      ) {
+        setIsSessionModalOpen(true);
+      }
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleSessionSaved = () => {
+    try {
+      const saved = localStorage.getItem("streamflow_yt_cookie");
+      setHasActiveSession(Boolean(saved && saved.trim()));
+      if (currentUrl && saved && saved.trim()) {
+        handleAnalyze(currentUrl);
+      }
+    } catch {}
   };
 
   const handleDownloadStarted = (type: "video" | "audio", quality: string) => {
@@ -111,6 +143,8 @@ export default function Home() {
       <Navbar
         historyCount={history.length}
         onOpenHistory={() => setIsHistoryOpen(true)}
+        hasActiveSession={hasActiveSession}
+        onOpenSession={() => setIsSessionModalOpen(true)}
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-20 flex flex-col items-center space-y-12">
@@ -135,6 +169,7 @@ export default function Home() {
           onAnalyze={handleAnalyze}
           isLoading={isLoading}
           error={error}
+          onOpenSession={() => setIsSessionModalOpen(true)}
         />
 
         {metadata && (
@@ -187,6 +222,12 @@ export default function Home() {
         type={toastState.type}
         quality={toastState.quality}
         onClose={() => setToastState((prev) => ({ ...prev, isVisible: false }))}
+      />
+
+      <SessionModal
+        isOpen={isSessionModalOpen}
+        onClose={() => setIsSessionModalOpen(false)}
+        onSaved={handleSessionSaved}
       />
     </div>
   );

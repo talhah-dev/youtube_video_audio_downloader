@@ -15,10 +15,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Please enter a valid YouTube URL" }, { status: 400 });
     }
 
+    const rawCookie =
+      req.cookies.get("streamflow_yt_cookie")?.value ||
+      body?.cookie ||
+      req.headers.get("x-youtube-cookie") ||
+      process.env.YOUTUBE_COOKIE ||
+      "";
+    const cookie = rawCookie ? decodeURIComponent(rawCookie) : undefined;
+
     const clients: Client[] = [Client.WebEmbedded, Client.Tv, Client.Mweb];
     const ytdl = new Ytdl({
       clients,
-      ...(process.env.YOUTUBE_COOKIE ? { cookie: process.env.YOUTUBE_COOKIE } : {}),
+      ...(cookie ? { cookie } : {}),
     });
     const info = await ytdl.getInfo(url);
     const details = info.videoDetails;

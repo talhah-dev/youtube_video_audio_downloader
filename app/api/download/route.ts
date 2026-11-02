@@ -41,10 +41,18 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Missing URL parameter" }, { status: 400 });
     }
 
+    const rawCookie =
+      req.cookies.get("streamflow_yt_cookie")?.value ||
+      searchParams.get("cookie") ||
+      req.headers.get("x-youtube-cookie") ||
+      process.env.YOUTUBE_COOKIE ||
+      "";
+    const cookie = rawCookie ? decodeURIComponent(rawCookie) : undefined;
+
     const clients: Client[] = [Client.WebEmbedded, Client.Tv, Client.Mweb];
     const ytdl = new Ytdl({
       clients,
-      ...(process.env.YOUTUBE_COOKIE ? { cookie: process.env.YOUTUBE_COOKIE } : {}),
+      ...(cookie ? { cookie } : {}),
     });
     const safeTitle = cleanTitle(rawTitle) || "youtube_media";
     const asciiTitle = safeTitle.replace(/[^\x20-\x7E]/g, "").replace(/["']/g, "") || "download";
@@ -81,7 +89,7 @@ export async function GET(req: NextRequest) {
             isClosed = true;
             try {
               audioStream.destroy();
-            } catch {}
+            } catch { }
           },
         });
 
@@ -138,7 +146,7 @@ export async function GET(req: NextRequest) {
           try {
             audioStream.destroy();
             ffmpeg.kill();
-          } catch {}
+          } catch { }
         },
       });
 
@@ -194,7 +202,7 @@ export async function GET(req: NextRequest) {
         if (fs.existsSync(tempAudioFile)) {
           fs.unlinkSync(tempAudioFile);
         }
-      } catch {}
+      } catch { }
     };
 
     let isClosed = false;
@@ -225,7 +233,7 @@ export async function GET(req: NextRequest) {
         try {
           videoStream.destroy();
           ffmpeg.kill();
-        } catch {}
+        } catch { }
         cleanupTempFile();
       },
     });

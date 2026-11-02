@@ -1,15 +1,22 @@
 "use client";
 
 import React from "react";
-import { Clock } from "lucide-react";
+import { Clock, Key } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface NavbarProps {
   historyCount?: number;
   onOpenHistory?: () => void;
+  hasActiveSession?: boolean;
+  onOpenSession?: () => void;
 }
 
-export function Navbar({ historyCount = 0, onOpenHistory }: NavbarProps) {
+export function Navbar({
+  historyCount = 0,
+  onOpenHistory,
+  hasActiveSession = false,
+  onOpenSession,
+}: NavbarProps) {
   return (
     <div className="sticky top-0 z-50 w-full bg-white">
       <header className="w-full border-b border-[#e6e6e6] h-14 bg-white flex items-center">
@@ -29,6 +36,22 @@ export function Navbar({ historyCount = 0, onOpenHistory }: NavbarProps) {
           </div>
 
           <div className="flex items-center gap-2">
+            {onOpenSession && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={onOpenSession}
+                className="flex items-center gap-1.5 text-xs h-9 px-3.5 rounded-full font-medium"
+              >
+                <Key className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Session</span>
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    hasActiveSession ? "bg-[#16a34a]" : "bg-[#888888]"
+                  }`}
+                />
+              </Button>
+            )}
             {onOpenHistory && (
               <Button
                 variant="secondary"
